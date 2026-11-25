@@ -17,6 +17,10 @@ pin_for() {
     https://github.com/poorvith-mp/skills-finance)        echo 9e9b1cb547c5671594c15dd5f6c50d9e8069d711 ;;
     https://github.com/anthropics/k12-teacher-skills)     echo 31fd6dbb0c07cb50bb3ce7f62a4135a393bd0e8c ;;
     https://github.com/seanmcww/uk-lesson-planning)       echo 31a05832128f3a9f3c827dbb7799e5349bd485ab ;;
+    https://github.com/bgolubovski/exec-recruiter)      echo db3e3a7fa50873fa3304a158ec84299398e946b9 ;;
+    https://github.com/dbhat93/job-search-os)           echo 412d99360396143316ad949a290078cd4a7b6f57 ;;
+    https://github.com/Frederic-Klingen-Personalberatung/Recruiting-Skills-for-AI-Agents) echo 86f9ebd393b1d5482ea2e56be15777b86feff13a ;;
+    https://github.com/workinsiders/claude-skills)      echo 79ac683946673b25df14e1a71137c5b0a82c1ee3 ;;
     *) echo "" ;;
   esac
 }
@@ -58,11 +62,15 @@ while IFS="$TAB" read -r name url path || [ -n "${name:-}" ]; do
   fi
   [ -d "$root" ] || { warn "$name" "could not download $slug at $pin"; continue; }
   src="$root/$path"
-  [ -f "$src/SKILL.md" ] || { warn "$name" "no SKILL.md at $path in $slug"; continue; }
+  case "$url" in
+    https://github.com/bgolubovski/exec-recruiter) ;;   # plugin repo: no root SKILL.md; installed whole by design
+    *) [ -f "$src/SKILL.md" ] || { warn "$name" "no SKILL.md at $path in $slug"; continue; } ;;
+  esac
   new="$TMP/new-$name"
   cp -R "$src" "$new" || { warn "$name" "copy failed"; continue; }
   case "$url" in
     https://github.com/anthropics/skills|https://github.com/anthropics/claude-for-legal|https://github.com/anthropics/knowledge-work-plugins|https://github.com/anthropics/k12-teacher-skills) ;;  # official Anthropic skills are installed whole
+    https://github.com/bgolubovski/exec-recruiter) ;;   # plugin: keep config/agents/templates + the two audited local scripts (read line by line 2026-11-25: no network, no exfil)
     *)                                            # third-party: text files only (no scripts, no eval fixtures)
       rm -rf "$new/scripts" "$new/evals"
       find "$new" -type f \( -name '*.py' -o -name '*.js' -o -name '*.mjs' -o -name '*.ts' -o -name '*.sh' -o -name 'evals.json' \) -exec rm -f {} + ;;
