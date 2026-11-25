@@ -6,12 +6,17 @@
 # A skill that fails is skipped with a loud warning; the rest continue.
 set -u
 
-# Upstream commits these skills were reviewed at (24 November 2026). Change a pin only after re-reading that repo.
+# Upstream commits these skills were reviewed at (24-25 November 2026). Change a pin only after re-reading that repo.
 pin_for() {
   case "$1" in
-    https://github.com/anthropics/skills)              echo e4bb5d960d87126ff3b3a8af1a104b7db67560ba ;;
-    https://github.com/coreyhaines31/marketingskills)  echo 8fd2fcade2fd6629026e9dfe6d133b55b36968b9 ;;
-    https://github.com/LeadMagic/gtm-skills)           echo 2b7ec0f9e7044f46e4c77b536f486303fd863e28 ;;
+    https://github.com/anthropics/skills)                 echo e4bb5d960d87126ff3b3a8af1a104b7db67560ba ;;
+    https://github.com/coreyhaines31/marketingskills)     echo 8fd2fcade2fd6629026e9dfe6d133b55b36968b9 ;;
+    https://github.com/LeadMagic/gtm-skills)              echo 2b7ec0f9e7044f46e4c77b536f486303fd863e28 ;;
+    https://github.com/anthropics/claude-for-legal)       echo 4a6c651889c97cc9140580363c73e0eb17379c2b ;;
+    https://github.com/anthropics/knowledge-work-plugins) echo 5e504ae11498f2b8daa30d86b7dab97b2ecd8092 ;;
+    https://github.com/poorvith-mp/skills-finance)        echo 9e9b1cb547c5671594c15dd5f6c50d9e8069d711 ;;
+    https://github.com/anthropics/k12-teacher-skills)     echo 31fd6dbb0c07cb50bb3ce7f62a4135a393bd0e8c ;;
+    https://github.com/seanmcww/uk-lesson-planning)       echo 31a05832128f3a9f3c827dbb7799e5349bd485ab ;;
     *) echo "" ;;
   esac
 }
@@ -57,13 +62,13 @@ while IFS="$TAB" read -r name url path || [ -n "${name:-}" ]; do
   new="$TMP/new-$name"
   cp -R "$src" "$new" || { warn "$name" "copy failed"; continue; }
   case "$url" in
-    https://github.com/anthropics/skills) ;;      # official skills are installed whole
+    https://github.com/anthropics/skills|https://github.com/anthropics/claude-for-legal|https://github.com/anthropics/knowledge-work-plugins|https://github.com/anthropics/k12-teacher-skills) ;;  # official Anthropic skills are installed whole
     *)                                            # third-party: text files only (no scripts, no eval fixtures)
       rm -rf "$new/scripts" "$new/evals"
       find "$new" -type f \( -name '*.py' -o -name '*.js' -o -name '*.mjs' -o -name '*.ts' -o -name '*.sh' -o -name 'evals.json' \) -exec rm -f {} + ;;
   esac
   case "$name" in
-    gtm-*)                                        # installed under a gtm- prefix: make the skill's own name match
+    gtm-*|cfl-*|legal-*|fin-*)                    # installed under a prefix: make the skill's own name match
       sed "s/^name:[[:space:]].*\$/name: $name/" "$new/SKILL.md" > "$new/SKILL.md.tmp" && mv "$new/SKILL.md.tmp" "$new/SKILL.md" ;;
   esac
   rm -rf "$DEST/$name" && mv "$new" "$DEST/$name" || { warn "$name" "could not write $DEST/$name"; continue; }
